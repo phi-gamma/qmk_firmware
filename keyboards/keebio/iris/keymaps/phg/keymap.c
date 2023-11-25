@@ -27,6 +27,13 @@ enum tap_handlers {
     RCP = 1,
 };
 
+/**
+ * - ``KC_APP`` is ``Menu`` in Xorg, to be mapped to the Compose key /
+ *   ``Multi_key``.
+ *
+ * - ``KC_LGUI`` is the Windows key / ``Super_L`` in X.
+ */
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_QWERTY] = LAYOUT(
@@ -37,7 +44,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_CAPS, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                               KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     TD(LCP), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_HOME,          KC_LGUI, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, TD(RCP),
+     TD(LCP), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_HOME,          KC_APP,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, TD(RCP),
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
                                     LOWER,   KC_LCTL, KC_LALT,                   KC_SPC,  KC_RALT, RAISE
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
