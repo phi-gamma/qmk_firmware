@@ -4,7 +4,9 @@
 #include QMK_KEYBOARD_H
 
 /** X11 paste. */
-#define SHF_INS SFT_T(KC_INS)
+#define SHF_INS LSFT(KC_INS)
+#define T_SP_CL LCTL_T(KC_SPC)
+#define T_SP_CR RCTL_T(KC_SPC)
 
 enum custom_layers {
     _QWERTY = 0,
@@ -55,21 +57,21 @@ const uint16_t PROGMEM keymaps[] [MATRIX_ROWS] [MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      TD(LCP), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_HOME,          KC_APP,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, TD(RCP),
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    LOWER,   KC_LCTL, KC_LALT,                   KC_RALT, KC_SPC,  RAISE
+                                    LOWER,   T_SP_CL, KC_LALT,                   KC_RALT, T_SP_CR,  RAISE
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
   [_LOWER] = LAYOUT(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
-     KC_TILD, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                            KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
+     KC_TILD, KC_EXLM, KC_AT,   KC_PSCR, KC_SCRL, KC_NUM,                             KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     QK_BOOT, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                               KC_6,    KC_PGUP, KC_HOME, KC_9,    KC_PIPE, KC_RBRC,
+     QK_BOOT, KC_1,    KC_2,    KC_3,    KC_4,    KC_RBRC,                            KC_RBRC, KC_PGUP, KC_HOME, KC_9,    KC_PIPE, KC_RBRC,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_DEL,  _______, KC_LEFT, KC_RGHT, KC_UP,   KC_LBRC,                            KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_PLUS, KC_QUOT,
+     KC_DEL,  _______, KC_LEFT, KC_RGHT, KC_UP,   KC_BSLS,                            KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_PLUS, KC_QUOT,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_LSFT, _______, _______, _______, KC_DOWN, KC_LCBR, NUM_ON,           NUM_ON,  KC_RCBR, KC_PGDN, KC_END,  KC_P3,   KC_MINS, KC_RSFT,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    _______, KC_DEL,  _______,                   SHF_INS, KC_DEL,  KC_P0
+                                    _______, KC_DEL,  KC_LALT,                   SHF_INS, KC_DEL,  KC_P0
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -83,7 +85,7 @@ const uint16_t PROGMEM keymaps[] [MATRIX_ROWS] [MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_LSFT, KC_END,  KC_MPLY, KC_PGDN, KC_PGDN, KC_MINS, KC_LPRN,          _______, KC_PLUS, KC_END,  RGB_HUD, RGB_SAD, RGB_VAD, KC_RSFT,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    _______, KC_SPC,  SHF_INS,                   _______, _______, _______
+                                    _______, KC_SPC,  SHF_INS,                   KC_RALT, _______, _______
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -179,28 +181,31 @@ tap_dance_action_t tap_dance_actions[] = {
     [RCP] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_ESC),
 };
 
-const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = { 5, 2, 5, 8 };
 
-#ifdef RGBLIGHT_EFFECT_BREATHING
+#ifdef RGBLIGHT_ENABLE
+#if defined(RGBLIGHT_EFFECT_BREATHING) || defined(RGBLIGHT_EFFECT_RAINBOW_SWIRL)
+
+const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = { 3, 5, 2, 8 };
+
 layer_state_t layer_state_set_user (layer_state_t state)
 {
     switch (get_highest_layer(state)) {
         default:
-            rgblight_disable();
+            rgblight_disable ();
             break;
         case _NUMPAD: {
-            rgblight_enable();
+            rgblight_enable ();
             rgblight_mode(RGBLIGHT_MODE_RAINBOW_SWIRL);
             break;
         }
         case _LOWER: {
-            rgblight_enable();
+            rgblight_enable ();
             rgblight_mode(RGBLIGHT_MODE_BREATHING);
             rgblight_sethsv_noeeprom (HSV_PURPLE);
             break;
         }
         case _RAISE: {
-            rgblight_enable();
+            rgblight_enable ();
             rgblight_mode (RGBLIGHT_MODE_BREATHING);
             rgblight_sethsv_noeeprom (HSV_BLUE);
             break;
@@ -211,3 +216,31 @@ layer_state_t layer_state_set_user (layer_state_t state)
 }
 #endif
 
+#ifdef RGBLIGHT_EFFECT_GRADIENT
+bool led_update_kb (led_t led_state)
+{
+    const bool upd = led_update_user (led_state);
+
+    uint8_t r = 0, g = 0, b = 0;
+
+    if (!upd) {
+        return upd;
+    }
+
+    if (led_state.caps_lock  ) { r = 255; }
+    if (led_state.num_lock   ) { g = 255; }
+    if (led_state.scroll_lock) { b = 255; }
+
+    if (!(r | g | b)) {
+        rgblight_disable ();
+        return upd;
+    }
+
+    rgblight_enable ();
+    rgblight_mode (RGBLIGHT_MODE_STATIC_GRADIENT);
+    rgblight_setrgb (r, g, b);
+
+    return upd;
+}
+#endif
+#endif

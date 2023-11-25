@@ -7,3 +7,7 @@
 #define RGBLIGHT_EFFECT_STATIC_GRADIENT
 #define RGBLIGHT_EFFECT_BREATHING
 
+/** Tap/hold settings. */
+#define TAPPING_TERM 200
+#define HOLD_ON_OTHER_KEY_PRESS
+
