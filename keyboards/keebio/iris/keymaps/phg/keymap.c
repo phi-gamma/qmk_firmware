@@ -15,6 +15,11 @@ enum custom_keycodes {
   ADJUST,
 };
 
+/**
+ * CAPS lock behavior rests on the assumtion that ``caps:swapescape`` is being
+ * used in the X server. Hence we need to send ``ESC`` in order to toggle CAPS
+ * locking.
+ */
 enum tap_handlers {
     /** Left shift CAPS lock double tap. */
     LCP = 0,
@@ -30,9 +35,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                               KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_ESC,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                               KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,
+     KC_CAPS, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                               KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     TD(LCP), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_HOME,          KC_APP,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, TD(RCP),
+     TD(LCP), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_HOME,          KC_LGUI, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, TD(RCP),
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
                                     LOWER,   KC_LCTL, KC_LALT,                   KC_SPC,  KC_RALT, RAISE
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
@@ -124,7 +129,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
 
 
 tap_dance_action_t tap_dance_actions[] = {
-  [LCP] = ACTION_TAP_DANCE_DOUBLE(KC_LSFT, KC_CAPS),
-  [RCP] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS),
+  [LCP] = ACTION_TAP_DANCE_DOUBLE(KC_LSFT, KC_ESC),
+  [RCP] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_ESC),
 };
 
