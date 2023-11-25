@@ -3,16 +3,25 @@
 
 #include QMK_KEYBOARD_H
 
-#define _QWERTY 0
-#define _LOWER 1
-#define _RAISE 2
-#define _ADJUST 3
+/** X11 paste. */
+#define SHF_INS SFT_T(KC_INS)
+
+enum custom_layers {
+    _QWERTY = 0,
+    _LOWER,
+    _RAISE,
+    _ADJUST,
+    /** NUM pads on both left and right half. */
+    _NUMPAD,
+};
 
 enum custom_keycodes {
-  QWERTY = SAFE_RANGE,
-  LOWER,
-  RAISE,
-  ADJUST,
+    QWERTY = SAFE_RANGE,
+    LOWER,
+    RAISE,
+    NUM_ON,
+    NUM_OFF,
+    ADJUST,
 };
 
 /**
@@ -58,9 +67,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_DEL,  _______, KC_LEFT, KC_RGHT, KC_UP,   KC_LBRC,                            KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_PLUS, KC_PIPE,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     BL_STEP, _______, _______, _______, KC_DOWN, KC_LCBR, KC_LPRN,          KC_RPRN, KC_RCBR, KC_P1,   KC_P2,   KC_P3,   KC_MINS, KC_CAPS,
+     BL_STEP, _______, _______, _______, KC_DOWN, KC_LCBR, NUM_ON,           NUM_ON,  KC_RCBR, KC_P1,   KC_P2,   KC_P3,   KC_MINS, KC_CAPS,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    _______, _______, KC_DEL,                    KC_DEL,  _______, KC_P0
+                                    _______, _______, KC_DEL,                    KC_DEL,  SHF_INS, KC_P0
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -74,7 +83,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_CAPS, KC_MSTP, KC_MPLY, KC_VOLD, KC_PGDN, KC_MINS, KC_LPRN,          _______, KC_PLUS, KC_END,  RGB_HUD, RGB_SAD, RGB_VAD, _______,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    _______, _______, _______,                   _______, _______, _______
+                                    _______, SHF_INS, _______,                   _______, _______, _______
+                                // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
+  ),
+
+  [_NUMPAD] = LAYOUT(
+  //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
+     _______, _______, KC_EQL,  KC_SLSH, KC_ASTR, KC_MINS,                            _______, KC_EQL,  KC_SLSH, KC_ASTR, KC_MINS, _______,
+  //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
+     _______, _______, KC_7,    KC_8,    KC_9,    KC_PLUS,                            _______, KC_7,    KC_8,    KC_9,    KC_PLUS, _______,
+  //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
+     _______, _______, KC_4,    KC_5,    KC_6,    KC_ENT,                             _______, KC_4,    KC_5,    KC_6,    KC_ENT,  _______,
+  //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+     _______, _______, KC_1,    KC_2,    KC_3,    KC_DEL,  NUM_OFF,          NUM_OFF, _______, KC_1,    KC_2,    KC_3,    KC_DEL,  _______,
+  //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
+                                    KC_INS,  KC_LCTL, KC_LALT,                   KC_SPC,  KC_RALT, KC_INS
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -96,13 +119,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 bool process_record_user(uint16_t keycode, keyrecord_t *record)
 {
   switch (keycode) {
-    case QWERTY:
+    case QWERTY: {
       if (record->event.pressed) {
         set_single_persistent_default_layer(_QWERTY);
       }
       return false;
-      break;
-    case LOWER:
+    }
+    case LOWER: {
       if (record->event.pressed) {
         layer_on(_LOWER);
         update_tri_layer(_LOWER, _RAISE, _ADJUST);
@@ -112,7 +135,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
       }
       return false;
       break;
-    case RAISE:
+    }
+    case RAISE: {
       if (record->event.pressed) {
         layer_on(_RAISE);
         update_tri_layer(_LOWER, _RAISE, _ADJUST);
@@ -122,7 +146,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
       }
       return false;
       break;
-    case ADJUST:
+    }
+    case NUM_ON: {
+       if (!record->event.pressed) {
+         rgblight_mode(RGBLIGHT_MODE_SNAKE);
+         layer_on(_NUMPAD);
+       }
+       return false;
+    }
+    case NUM_OFF: {
+       if (record->event.pressed) {
+         rgblight_mode(RGBLIGHT_MODE_RAINBOW_MOOD);
+         layer_off(_NUMPAD);
+       }
+       return false;
+    }
+    case ADJUST: {
       if (record->event.pressed) {
         layer_on(_ADJUST);
       } else {
@@ -130,6 +169,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
       }
       return false;
       break;
+    }
   }
   return true;
 }
