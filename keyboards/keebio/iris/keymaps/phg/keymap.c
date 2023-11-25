@@ -43,7 +43,7 @@ enum tap_handlers {
  * - ``KC_LGUI`` is the Windows key / ``Super_L`` in X.
  */
 
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+const uint16_t PROGMEM keymaps[] [MATRIX_ROWS] [MATRIX_COLS] = {
 
   [_QWERTY] = LAYOUT(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
@@ -116,67 +116,98 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   )
 };
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record)
+bool process_record_user (uint16_t keycode, keyrecord_t *record)
 {
-  switch (keycode) {
-    case QWERTY: {
-      if (record->event.pressed) {
-        set_single_persistent_default_layer(_QWERTY);
-      }
-      return false;
+    switch (keycode) {
+        default: {
+            break;
+        }
+        case QWERTY: {
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_QWERTY);
+            }
+            return false;
+        }
+        case LOWER: {
+            if (record->event.pressed) {
+                layer_on(_LOWER);
+                update_tri_layer(_LOWER, _RAISE, _ADJUST);
+            } else {
+                layer_off(_LOWER);
+                update_tri_layer(_LOWER, _RAISE, _ADJUST);
+            }
+            return false;
+        }
+        case RAISE: {
+            if (record->event.pressed) {
+                layer_on(_RAISE);
+                update_tri_layer(_LOWER, _RAISE, _ADJUST);
+            } else {
+                layer_off(_RAISE);
+                update_tri_layer(_LOWER, _RAISE, _ADJUST);
+            }
+            return false;
+        }
+        case NUM_ON: {
+            if (!record->event.pressed) {
+                layer_on(_NUMPAD);
+            }
+            return false;
+        }
+        case NUM_OFF: {
+            if (record->event.pressed) {
+                layer_off(_NUMPAD);
+            }
+            return false;
+        }
+        case ADJUST: {
+            if (record->event.pressed) {
+                layer_on(_ADJUST);
+            } else {
+                layer_off(_ADJUST);
+            }
+            return false;
+        }
     }
-    case LOWER: {
-      if (record->event.pressed) {
-        layer_on(_LOWER);
-        update_tri_layer(_LOWER, _RAISE, _ADJUST);
-      } else {
-        layer_off(_LOWER);
-        update_tri_layer(_LOWER, _RAISE, _ADJUST);
-      }
-      return false;
-      break;
-    }
-    case RAISE: {
-      if (record->event.pressed) {
-        layer_on(_RAISE);
-        update_tri_layer(_LOWER, _RAISE, _ADJUST);
-      } else {
-        layer_off(_RAISE);
-        update_tri_layer(_LOWER, _RAISE, _ADJUST);
-      }
-      return false;
-      break;
-    }
-    case NUM_ON: {
-       if (!record->event.pressed) {
-         rgblight_mode(RGBLIGHT_MODE_SNAKE);
-         layer_on(_NUMPAD);
-       }
-       return false;
-    }
-    case NUM_OFF: {
-       if (record->event.pressed) {
-         rgblight_mode(RGBLIGHT_MODE_RAINBOW_MOOD);
-         layer_off(_NUMPAD);
-       }
-       return false;
-    }
-    case ADJUST: {
-      if (record->event.pressed) {
-        layer_on(_ADJUST);
-      } else {
-        layer_off(_ADJUST);
-      }
-      return false;
-      break;
-    }
-  }
-  return true;
+
+    return true;
 }
 
 
 tap_dance_action_t tap_dance_actions[] = {
-  [LCP] = ACTION_TAP_DANCE_DOUBLE(KC_LSFT, KC_ESC),
-  [RCP] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_ESC),
+    [LCP] = ACTION_TAP_DANCE_DOUBLE(KC_LSFT, KC_ESC),
+    [RCP] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_ESC),
 };
+
+const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = { 5, 2, 5, 8 };
+
+#ifdef RGBLIGHT_EFFECT_BREATHING
+layer_state_t layer_state_set_user (layer_state_t state)
+{
+    switch (get_highest_layer(state)) {
+        default:
+            rgblight_disable();
+            break;
+        case _NUMPAD: {
+            rgblight_enable();
+            rgblight_mode(RGBLIGHT_MODE_RAINBOW_SWIRL);
+            break;
+        }
+        case _LOWER: {
+            rgblight_enable();
+            rgblight_mode(RGBLIGHT_MODE_BREATHING);
+            rgblight_sethsv_noeeprom (HSV_PURPLE);
+            break;
+        }
+        case _RAISE: {
+            rgblight_enable();
+            rgblight_mode (RGBLIGHT_MODE_BREATHING);
+            rgblight_sethsv_noeeprom (HSV_BLUE);
+            break;
+        }
+    }
+
+    return state;
+}
+#endif
 
