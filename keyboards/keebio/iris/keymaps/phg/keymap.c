@@ -183,9 +183,9 @@ tap_dance_action_t tap_dance_actions[] = {
 
 
 #ifdef RGBLIGHT_ENABLE
-#if defined(RGBLIGHT_EFFECT_BREATHING) || defined(RGBLIGHT_EFFECT_RAINBOW_SWIRL)
 
-static bool led_state_handler (led_t led_state);
+static bool led_state_handler (led_t);
+static layer_state_t layer_state_handler (layer_state_t);
 
 const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = { 3, 8, 5, 8 };
 
@@ -196,18 +196,23 @@ layer_state_t layer_state_set_user (layer_state_t state)
         return state;
     }
 
-    switch (get_highest_layer(state)) {
+    return layer_state_handler (state);
+}
+
+layer_state_t layer_state_handler (layer_state_t state)
+{
+    switch (get_highest_layer (state)) {
         default:
             rgblight_disable ();
             break;
         case _NUMPAD: {
             rgblight_enable ();
-            rgblight_mode(RGBLIGHT_MODE_RAINBOW_SWIRL);
+            rgblight_mode (RGBLIGHT_MODE_RAINBOW_SWIRL);
             break;
         }
         case _LOWER: {
             rgblight_enable ();
-            rgblight_mode(RGBLIGHT_MODE_BREATHING);
+            rgblight_mode (RGBLIGHT_MODE_BREATHING);
             rgblight_sethsv_noeeprom (HSV_PURPLE);
             break;
         }
@@ -221,9 +226,7 @@ layer_state_t layer_state_set_user (layer_state_t state)
 
     return state;
 }
-#endif
 
-#ifdef RGBLIGHT_EFFECT_STATIC_GRADIENT
 bool led_update_kb (led_t led_state)
 {
     const bool upd = led_update_user (led_state);
@@ -239,6 +242,7 @@ bool led_update_kb (led_t led_state)
 
 static bool led_state_handler (led_t led_state)
 {
+    const bool was_enabled = rgblight_is_enabled ();
     uint8_t r = 0, g = 0, b = 0;
 
     if (led_state.compose) {
@@ -252,7 +256,11 @@ static bool led_state_handler (led_t led_state)
     if (led_state.scroll_lock) { b = 255; }
 
     if (!(r | g | b)) {
-        rgblight_disable ();
+        /* Careful here to avoid infinite recursion. */
+        if (was_enabled) {
+            rgblight_disable ();
+            (void)layer_state_handler (layer_state);
+        }
         return false;
     }
 
@@ -262,10 +270,4 @@ static bool led_state_handler (led_t led_state)
 
     return true;
 }
-#else
-static bool led_state_handler (led_t led_state)
-{
-    return false;
-}
-#endif
 #endif
