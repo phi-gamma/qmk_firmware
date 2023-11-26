@@ -185,10 +185,17 @@ tap_dance_action_t tap_dance_actions[] = {
 #ifdef RGBLIGHT_ENABLE
 #if defined(RGBLIGHT_EFFECT_BREATHING) || defined(RGBLIGHT_EFFECT_RAINBOW_SWIRL)
 
-const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = { 3, 5, 2, 8 };
+static bool led_state_handler (led_t led_state);
+
+const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = { 3, 8, 5, 8 };
 
 layer_state_t layer_state_set_user (layer_state_t state)
 {
+    /* Any LED lock overrides the layer color effect. */
+    if (led_state_handler (host_keyboard_led_state ())) {
+        return state;
+    }
+
     switch (get_highest_layer(state)) {
         default:
             rgblight_disable ();
@@ -216,15 +223,28 @@ layer_state_t layer_state_set_user (layer_state_t state)
 }
 #endif
 
-#ifdef RGBLIGHT_EFFECT_GRADIENT
+#ifdef RGBLIGHT_EFFECT_STATIC_GRADIENT
 bool led_update_kb (led_t led_state)
 {
     const bool upd = led_update_user (led_state);
 
-    uint8_t r = 0, g = 0, b = 0;
-
     if (!upd) {
         return upd;
+    }
+
+    (void)led_state_handler (led_state);
+
+    return upd;
+}
+
+static bool led_state_handler (led_t led_state)
+{
+    uint8_t r = 0, g = 0, b = 0;
+
+    if (led_state.compose) {
+        rgblight_enable ();
+        rgblight_mode (RGBLIGHT_MODE_ALTERNATING);
+        return true;
     }
 
     if (led_state.caps_lock  ) { r = 255; }
@@ -233,14 +253,19 @@ bool led_update_kb (led_t led_state)
 
     if (!(r | g | b)) {
         rgblight_disable ();
-        return upd;
+        return false;
     }
 
     rgblight_enable ();
     rgblight_mode (RGBLIGHT_MODE_STATIC_GRADIENT);
     rgblight_setrgb (r, g, b);
 
-    return upd;
+    return true;
+}
+#else
+static bool led_state_handler (led_t led_state)
+{
+    return false;
 }
 #endif
 #endif
