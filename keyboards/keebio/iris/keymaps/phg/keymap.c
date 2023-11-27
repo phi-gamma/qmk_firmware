@@ -188,6 +188,8 @@ static bool led_state_handler (led_t);
 static layer_state_t layer_state_handler (layer_state_t);
 
 const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = { 3, 8, 5, 8 };
+const uint8_t RGBLED_RAINBOW_MOOD_INTERVALS[] PROGMEM = { 42, 60, 23 };
+const uint8_t RGBLED_GRADIENT_RANGES[] PROGMEM = { 255, 170, 127, 85, 64 };
 
 layer_state_t layer_state_set_user (layer_state_t state)
 {
@@ -201,23 +203,25 @@ layer_state_t layer_state_set_user (layer_state_t state)
 
 layer_state_t layer_state_handler (layer_state_t state)
 {
+    const bool was_enabled = rgblight_is_enabled ();
+
     switch (get_highest_layer (state)) {
         default:
-            rgblight_disable ();
+            if (was_enabled) { rgblight_disable (); }
             break;
         case _NUMPAD: {
-            rgblight_enable ();
-            rgblight_mode (RGBLIGHT_MODE_RAINBOW_SWIRL);
+            if (!was_enabled) { rgblight_enable (); }
+            rgblight_mode (RGBLIGHT_MODE_RAINBOW_MOOD);
             break;
         }
         case _LOWER: {
-            rgblight_enable ();
+            if (!was_enabled) { rgblight_enable (); }
             rgblight_mode (RGBLIGHT_MODE_BREATHING);
             rgblight_sethsv_noeeprom (HSV_PURPLE);
             break;
         }
         case _RAISE: {
-            rgblight_enable ();
+            if (!was_enabled) { rgblight_enable (); }
             rgblight_mode (RGBLIGHT_MODE_BREATHING);
             rgblight_sethsv_noeeprom (HSV_BLUE);
             break;
@@ -246,7 +250,7 @@ static bool led_state_handler (led_t led_state)
     uint8_t r = 0, g = 0, b = 0;
 
     if (led_state.compose) {
-        rgblight_enable ();
+        if (!was_enabled) { rgblight_enable (); }
         rgblight_mode (RGBLIGHT_MODE_ALTERNATING);
         return true;
     }
@@ -264,8 +268,8 @@ static bool led_state_handler (led_t led_state)
         return false;
     }
 
-    rgblight_enable ();
-    rgblight_mode (RGBLIGHT_MODE_STATIC_GRADIENT);
+    if (!was_enabled) { rgblight_enable (); }
+    rgblight_mode (RGBLIGHT_MODE_RAINBOW_MOOD);
     rgblight_setrgb (r, g, b);
 
     return true;

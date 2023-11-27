@@ -21,3 +21,5 @@
 
 #define TAPPING_TERM   200
 #define TAPPING_TOGGLE   3 /* toggle layer permanently */
+
+#define RGBLIGHT_ANIMATIONS
